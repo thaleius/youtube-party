@@ -6,10 +6,11 @@
 			"name": "Launch Endpoint",
 			"type": "node",
 			"cwd": "${workspaceFolder}",
-			"runtimeExecutable": "/home/vscode/.deno/bin/uix",
+			"runtimeExecutable": "/home/vscode/.nvm/versions/node/v20.15.1/bin/npm",
 			"attachSimplePort": 9229,
 			"args": [
-				"--port=4625",
+				"run",
+				"dev"
 			],
 			"console": "integratedTerminal"
 		}
