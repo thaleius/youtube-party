@@ -146,13 +146,13 @@ export const toggleLike = (code: string, videoId: string) => {
 
 const users = await lazyEternalVar("users") ?? $$({} as Record<string, datexClassType<ObjectRef<typeof UserData>>>)
 
+/**
+ * Returns an existing or a newly created user session.
+ * 
+ * @param endpoint - The endpoint must be passed as a parameter if the function is called from the backend
+ * @returns A new or existing user session
+ */
 export const getUser = (endpoint?: string) => {
-  /**
-   * Returns an existing or a newly created user session.
-   * 
-   * @param endpoint - The endpoint must be passed as a parameter if the function is called from the backend
-   * @returns A new or existing user session
-   */
   const user = endpoint ? endpoint : datex.meta.caller.main.toString();
   if (!(user in users)) {
     users[user] = new UserData();
