@@ -4,7 +4,8 @@ import { search } from "backend/data.tsx";
 import { updateUser, Item } from "backend/sessions.ts";
 import NavMenu from "common/components/nav/NavMenu.tsx";
 import { toggleTheme } from "common/components/ToggleThemeButton.tsx";
-import { getSortedQueue, sorter } from "common/sort.tsx";
+import { sorter } from "common/sort.tsx";
+import { NowPlaying } from "common/components/NowPlaying.tsx";
 
 export default async function App(code: string) {
 
@@ -109,6 +110,20 @@ export default async function App(code: string) {
     );
   });
 
+  const current = always(() => {
+    if (session.currentlyPlaying) {
+      return (
+        <div class="mx-0">
+          <div class="text-accent-500 font-semibold text-sm mb-2">
+            currently playing
+          </div>
+          <NowPlaying item={session.currentlyPlaying} />
+        </div>
+      );
+    }
+    return <></>;
+  });
+
   const sortedQueue = always(() => session.queue.toSorted(sorter).filter(item => item !== session.currentlyPlaying));
 
   return (
@@ -117,7 +132,7 @@ export default async function App(code: string) {
         <div class="flex px-4 my-4 ">
           <SearchBar onSearch={onSearch} />
         </div>
-        <div class="px-4 py-4 border-t border-black dark:border-white/20 mx-0 overflow-y-scroll flex-grow">
+        <div class="px-4 py-4 border-t border-black dark:border-white/20 mx-0 overflow-y-auto flex-grow">
 
           <div class="space-y-4 text-white" style={{ display: showSearch }}>{
             searchResults.$.map(item => {
@@ -125,9 +140,17 @@ export default async function App(code: string) {
             })}
           </div>
           <div class="space-y-4 text-white" style={{ display: showQueue }}>
-            {
-              sortedQueue.$.map(item => <QueueItem item={item} type={'client'} code={code}></QueueItem>)
-            }
+            {current}
+            <div class={{
+                "border-t": always(() => sortedQueue.length > 0),
+                "py-4": true, "border-black": true, "dark:border-white/20": true, "dark:text-white": true, "mx-0": true, "overflow-y-auto": true, "flex-grow": true
+              }}>
+              <div class="space-y-4">
+                {
+                  sortedQueue.$.map(item => <QueueItem item={item} type={'client'} code={code}></QueueItem>)
+                }
+              </div>
+            </div>
           </div>
 
 
