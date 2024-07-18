@@ -16,7 +16,7 @@ export default function Welcome(sessionCode: string) {
 			return;
 		}
 
-		const name = user_name.val ?? 'anon';
+		const name = (user_name.val && !(["", " "].includes(user_name.val))) ? user_name.val : undefined;
 		const my_code = code.val.toUpperCase();
 
 		addClientsInfo(code.val.toUpperCase(), name);

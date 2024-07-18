@@ -76,7 +76,7 @@ export const updateUser = (code: string) => {
   return session;
 }
 
-export const addClientsInfo = (code: string, nick: string) => {
+export const addClientsInfo = (code: string, nick: string | undefined) => {
   const client = getUser();
   const session = getSessionWithCode(code);
   if (!session) {
