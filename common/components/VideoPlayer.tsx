@@ -1,7 +1,8 @@
-import { getAndRemoveNextVideoFromSession, Item, SessionData } from "backend/sessions.ts";
+import { getAndRemoveNextVideoFromSession, Item } from "backend/sessions.ts";
 import { pauseDiscord, resumeDiscord } from "backend/integrations/discord/Client.ts";
+import { SessionT } from "common/components/integrations/discord/Definitions.ts";
 
-export default function VideoPlayer({ queue, session }: Readonly<{ queue: Item[], session: SessionData }>) {
+export default function VideoPlayer({ queue, session }: Readonly<{ queue: Item[], session: SessionT }>) {
   // @ts-ignore - YouTube API
   let player;
 
@@ -78,7 +79,6 @@ export default function VideoPlayer({ queue, session }: Readonly<{ queue: Item[]
   }
 
   const text = always(() => {
-    console.log("queue updated");
     if (queue.length === 0) {
       return <span>Add a video to the queue!</span>;
     }

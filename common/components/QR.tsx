@@ -1,6 +1,4 @@
-import { Pointer } from "datex-core-legacy/runtime/pointers.ts";
-
-export default function QRCode({ code }: { code: Pointer<string> & string }) {
+export default function QRCode({ code }: { code: string }) {
   const qrCode = always(() => {
     if (code == "XXXX") {
       const text = "Loading QR Code";
@@ -19,7 +17,7 @@ export default function QRCode({ code }: { code: Pointer<string> & string }) {
 
       return <span style={{ color: "black" }}>{loadingText}</span>;
     } else {
-      const qrCodeSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(`${new URL(window.location.href).origin}/welcome?code=${encodeURIComponent(code)}`)}&format=svg`;
+      const qrCodeSrc = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(`${new URL(window.location.href).origin}/welcome/${encodeURIComponent(code)}`)}&format=svg`;
 
       return <img class="h-full" src={qrCodeSrc} alt="QR code" />;
     }

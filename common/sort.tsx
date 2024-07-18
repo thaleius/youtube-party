@@ -1,6 +1,7 @@
-import { type SessionData, type Item } from "backend/sessions.ts";
+import { type Item } from "backend/sessions.ts";
+import { SessionT } from "common/components/integrations/discord/Definitions.ts";
 
-const sorter = (a: Item, b: Item) => {
+export const sorter = (a: Item, b: Item) => {
 	if (a.likes.size > b.likes.size) return -1;
 	if (a.likes.size < b.likes.size) return 1;
 	if (a.added > b.added) return 1;
@@ -8,7 +9,7 @@ const sorter = (a: Item, b: Item) => {
 	return 0;
   }
 
-export const getSortedQueue = (session: SessionData) => {
+export const getSortedQueue = (session: SessionT) => {
 	if (!session) {
 		console.log("no session!")
 		return $$([])

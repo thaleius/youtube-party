@@ -1,15 +1,12 @@
-import { QueueItem } from "./components/QueueItem.tsx";
-import SearchBar from "./components/SearchBar.tsx";
+import { QueueItem } from "common/components/QueueItem.tsx";
+import SearchBar from "common/components/SearchBar.tsx";
 import { search } from "backend/data.tsx";
 import { updateUser, Item } from "backend/sessions.ts";
-import { Context } from "uix/routing/context.ts";
-import { loadInitialTheme } from "./components/ToggleThemeButton.tsx";
-import NavMenu from "./components/nav/NavMenu.tsx";
-import { toggleTheme } from "./components/ToggleThemeButton.tsx";
-import { getSortedQueue } from "common/sort.tsx";
+import NavMenu from "common/components/nav/NavMenu.tsx";
+import { toggleTheme } from "common/components/ToggleThemeButton.tsx";
+import { getSortedQueue, sorter } from "common/sort.tsx";
 
-export default async function App(ctx: Context) {
-  const code = (ctx.urlPattern?.pathname.groups[0] ?? "XXXX").toUpperCase();
+export default async function App(code: string) {
 
   //get the nick of the user from sessiondata
   //const nick = (ctx.searchParams.get('nick') ?? "anon");
@@ -25,15 +22,13 @@ export default async function App(ctx: Context) {
             <p class="text-gray-500 dark:text-gray-400">The session you are trying to join does not exist.</p>
 
             <div>
-              <a href={"/welcome?code=" + code} class="flex w-full justify-center rounded-md bg-accent-600 dark:bg-accent-500 disabled:opacity-50 dark:hover:bg-accent-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-accent-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600">change code</a>
+              <a href={"/welcome/" + code} class="flex w-full justify-center rounded-md bg-accent-600 dark:bg-accent-500 disabled:opacity-50 dark:hover:bg-accent-400 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-accent-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-600">change code</a>
             </div>
           </div>
         </div>
       </main>
     )
   }
-
-  const sorted = await getSortedQueue(session);
 
   const searchResults = $$<Item[]>([]);
 
@@ -114,6 +109,8 @@ export default async function App(ctx: Context) {
     );
   });
 
+  const sortedQueue = always(() => session.queue.toSorted(sorter).filter(item => item !== session.currentlyPlaying));
+
   return (
     <main class="bg-gray-50 dark:bg-gray-950">
       <div class="flex flex-col overflow-y-hidden h-[100dvh] rounded-xl mx-auto max-w-2xl">
@@ -127,10 +124,10 @@ export default async function App(ctx: Context) {
               return <QueueItem item={item} type={'search'} code={code}></QueueItem>
             })}
           </div>
-          <div class="space-y-4 text-white" style={{ display: showQueue }}>{
-            sorted.$.map(item => {
-              return <QueueItem item={item} type={'client'} code={code}></QueueItem>
-            })}
+          <div class="space-y-4 text-white" style={{ display: showQueue }}>
+            {
+              sortedQueue.$.map(item => <QueueItem item={item} type={'client'} code={code}></QueueItem>)
+            }
           </div>
 
 

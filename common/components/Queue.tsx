@@ -1,5 +1,5 @@
 import { ObjectRef } from "datex-core-legacy/runtime/pointers.ts";
-import { QueueItem } from "./QueueItem.tsx";
+import { QueueItem } from "common/components/QueueItem.tsx";
 import { Item } from "backend/sessions.ts";
 
 export type QueueType = 'player' | 'client' | 'search';

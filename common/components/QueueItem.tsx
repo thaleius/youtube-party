@@ -1,15 +1,14 @@
-import { ObjectRef } from "datex-core-legacy/runtime/pointers.ts";
-import { QueueType } from "./Queue.tsx";
+import { QueueType } from "common/components/Queue.tsx";
 import { addItemToQueue, getSessionWithCode, getUser, Item, toggleLike } from "backend/sessions.ts";
 import { updateRecommendations  } from "backend/data.tsx"
 
-const userId = (await getUser()).userId;
+const user = await getUser();
 
 export async function QueueItem({
   item,
   type,
   code
-}: Readonly<{ item: ObjectRef<Item>; type: QueueType; code: string }>) {
+}: Readonly<{ item: Item; type: QueueType; code: string }>) {
 
   async function renderIcon() {
     const session = await getSessionWithCode(code);
@@ -77,7 +76,7 @@ export async function QueueItem({
           }}
         >
           {always(() => {
-            if (item.likes.has(userId))
+            if (item.likes.has(user.id))
               return (
                 <div class="text-accent-500 fill-accent-500 stroke-accent-500 flex">
                   <div class="font-semibold">{item.likes.size}</div>
@@ -115,9 +114,11 @@ export async function QueueItem({
       );
     } else if (type === "search") {
       const session = await getSessionWithCode(code);
+
+      if (!session) return redirect("/client/" + code);
       
       const updatedItem = session.queue.find((queueItem) => queueItem.id === item.id) || item;
-      let isLiked = updatedItem.likes.has(userId);
+      let isLiked = updatedItem.likes.has(user.id);
       
       if( session?.queue.filter((v) => v.id == updatedItem.id).length > 0){
         return (
@@ -133,7 +134,7 @@ export async function QueueItem({
           >
             {always(() => {
               const updatedItem = session.queue.find((queueItem) => queueItem.id === item.id) || item;
-              isLiked = updatedItem.likes.has(userId);
+              isLiked = updatedItem.likes.has(user.id);
               if (isLiked)
                 return (
                   <div class="text-accent-500 fill-accent-500 stroke-accent-500 flex">
@@ -234,7 +235,7 @@ export async function QueueItem({
   async function updateLikeButton(item: Item, code: string) {
     const button = document.getElementById(`button-${item.id}`);
     if (button) {
-      const likeButton = await renderLikeButton(item, code);
+      const likeButton = await renderLikeButton(item, code) as Element;
       button.replaceChildren(likeButton);
     }
   }
@@ -242,9 +243,11 @@ export async function QueueItem({
   
   async function renderLikeButton(item: Item, code: string) {
     const session = await getSessionWithCode(code);
+
+    if (!session) return redirect("/client/" + code);
     
     const updatedItem = session.queue.find((queueItem) => queueItem.id === item.id) || item;
-    const isLiked = updatedItem.likes.has(userId);
+    const isLiked = updatedItem.likes.has(user.id);
 
     return (
       <button onclick={ async () => {
@@ -305,7 +308,7 @@ export async function QueueItem({
             <p class="text-xs">{item.duration} minutes</p>
           </div>
           <div class="queueicon2 flex h-full justify-center items-center stroke-black dark:stroke-white px-2">
-            {await getAction()}
+            {await getAction() as Element}
           </div>
         </div>
       </div>

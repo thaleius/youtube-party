@@ -1,33 +1,23 @@
-import QRCode from "./components/QR.tsx";
-import VideoPlayer from "./components/VideoPlayer.tsx";
-import { QueueItem } from "./components/QueueItem.tsx";
+import QRCode from "common/components/QR.tsx";
+import VideoPlayer from "common/components/VideoPlayer.tsx";
+import { QueueItem } from "common/components/QueueItem.tsx";
 
-import QRCodeOverlay from "./components/QRCodeOverlay.tsx";
-import UserDisplay from "./components/UserDisplay.tsx";
-import { getSessionUserHosts, getRecommendedQueue } from "backend/sessions.ts";
+import QRCodeOverlay from "common/components/QRCodeOverlay.tsx";
+import UserDisplay from "common/components/UserDisplay.tsx";
+import { getSession, getRecommendedQueue } from "backend/sessions.ts";
 
-import { NowPlaying } from "./components/NowPlaying.tsx";
-import addDurations from "./helper.tsx";
+import { NowPlaying } from "common/components/NowPlaying.tsx";
+import addDurations from "common/helper.tsx";
 
-import ToggleThemeButton, {
-  loadInitialTheme,
-} from "./components/ToggleThemeButton.tsx";
-import { Item } from "../backend/sessions.ts";
+import ToggleThemeButton from "common/components/ToggleThemeButton.tsx";
+import { Item } from "backend/sessions.ts";
 
 import { ToggleDiscordControls } from "common/components/integrations/discord/DiscordPopup.tsx";
 import Discord from "common/components/integrations/discord/Discord.tsx";
-import { getSortedQueue } from "common/sort.tsx";
+import { sorter } from "common/sort.tsx";
 
 export default async function App() {
-  const session = await getSessionUserHosts();
-  
-  const code = $$(session.code);
-
-  const arr = Array.from(session.clientIds);
-  const num = arr.length;
-  console.log(arr);
-	const users = always(() => Object.values(session.clients).map(client => client.name));
-	console.log(users);
+  const session = await getSession();
 
   // discord controls toggle
   const showDiscordControls = $$(false);
@@ -46,13 +36,11 @@ export default async function App() {
           <NowPlaying item={session.currentlyPlaying} />
         </div>
       );
-    } else {
-      return null;
     }
+    return <></>;
   });
 
-	const sorted = await getSortedQueue(session);
-  const recommended = await getRecommendedQueue(code);
+  const recommended = await getRecommendedQueue(session.code);
 
   const timeLeft = always(() => {
     let timeCounter = "0:00";
@@ -63,9 +51,7 @@ export default async function App() {
   });
 
 
-  const Recommendations = () => {
-
-    // console.log('session', session)
+  const recommendations = always(() => {
     if (recommended.length === 0) {
       return <></>
     }
@@ -75,21 +61,23 @@ export default async function App() {
         <div class="text-black dark:text-white">RECOMMENDED:</div>
         <div class="space-y-4">{
           recommended.$.map(item => {
-            return <QueueItem item={item} type={'search'} code={code}></QueueItem>
+            return <QueueItem item={item} type={'search'} code={session.code}></QueueItem>
           })}
         </div>
       </div>
     )
 
-	}
+	});
+
+  const sortedQueue = always(() => session.queue.toSorted(sorter).filter(item => item !== session.currentlyPlaying));
 
   // assign video player component to a variable, so it can be rendered conditionally
   const videoPlayer = always(() => {
-    return <VideoPlayer queue={sorted} session={session} />;
+    return <VideoPlayer queue={sortedQueue} session={session} />;
   });
 
   // assign discord component to a variable, so it doesn't rerender on every state change
-  const discord = always(() => <Discord code={code} />);
+  const discord = always(() => <Discord code={session.code} />);
 
   // load from local storage
   if (localStorage.getItem('showDiscordControls') !== showDiscordControls.val.toString()) {
@@ -112,14 +100,14 @@ export default async function App() {
       <div class="mx-auto grid md:grid-cols-2 h-screen">
         
         <div class="flex flex-col h-screen hidden md:flex items-center justify-center p-8">
-          <QRCode code={code}/>
+          <QRCode code={session.code}/>
           <div class="text-black dark:text-white text-3xl font-semibold mt-4 text-center">
-            Party code: <a target="_blank" href={`${window.location.origin}/welcome?code=${encodeURIComponent(code)}`}>{code}</a>
+            Party code: <a target="_blank" href={`${window.location.origin}/welcome/${encodeURIComponent(session.code)}`}>{session.code}</a>
           </div>
           {/* <div class="text-xl text-white dark:text-white font-semibold">
               {num} 
           </div> */}
-          <UserDisplay names={users} />
+          <UserDisplay clients={session.clients} />
 
         </div>
         
@@ -147,17 +135,17 @@ export default async function App() {
                 </div>
               )
             )}
-			<div class="space-y-4">{
-        sorted.$.map(item => {
-          return <QueueItem item={item} type={'player'} code={code}></QueueItem>
-        })}
-      </div>
-      <Recommendations  />
+            <div class="space-y-4">
+              {
+                sortedQueue.$.map(item => <QueueItem item={item} type={'player'} code={session.code}></QueueItem>)
+              }
+            </div>
+            {recommendations}
           </div>
         </div>
       </div>
 
-      <QRCodeOverlay code={code} />
+      <QRCodeOverlay code={session.code} />
     </main>
   );
 }

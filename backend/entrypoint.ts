@@ -13,5 +13,5 @@ try {
 }
 
 export default {
-	"/": import("../common/home.tsx"),
+	"/": import("common/home.tsx"),
 }

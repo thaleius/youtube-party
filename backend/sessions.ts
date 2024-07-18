@@ -1,7 +1,6 @@
-import { ObjectRef } from "datex-core-legacy/runtime/pointers.ts";
 import { getUserPlayerInstances, play } from "backend/integrations/discord/Client.ts";
-import { datexClassType } from "unyt_core/datex_all.ts";
-import { UserData } from "common/components/integrations/discord/Definitions.ts";
+import { SessionT, Session, User, UserT } from "common/components/integrations/discord/Definitions.ts";
+import { sorter } from "common/sort.tsx";
 
 export type Item = {
   title: string;
@@ -13,36 +12,16 @@ export type Item = {
   added: number;
 };
 
-export interface Client {
-	id: string;
-	name: string;
-}
-
-// TO ADD: In the session, clientName should also be saved together with clientId
-export interface SessionData {
-  code: string;
-  hostId: string;
-  host: datexClassType<ObjectRef<typeof UserData>>;
-  clientIds: Set<string>;
-  clients: Record<string, Client>;
-  queue: Item[];
-  recommendedQueue: Item[];
-  currentlyPlaying: Item | null;
-};
-
+export type code = string;
 // map of session codes to session data
-export const sessions = await lazyEternalVar('sessions-1234') ?? $$({} as Record<string, SessionData>);
+export const sessions = await lazyEternalVar('sessions') ?? $$(new Map<code, SessionT>());
 
-const sorter = (a: Item, b: Item) => {
-  if (a.likes.size > b.likes.size) return -1;
-  if (a.likes.size < b.likes.size) return 1;
-  if (a.added > b.added) return 1;
-  if (a.added < b.added) return -1;
-  return 0;
+export const getSessionWithCode = (code: string) => {
+  return sessions.get(code);
 }
 
 export const getAndRemoveNextVideoFromSession = (code: string) => {
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     return;
   }
@@ -50,7 +29,7 @@ export const getAndRemoveNextVideoFromSession = (code: string) => {
   if (video) {
     session.queue.splice(session.queue.indexOf(video), 1);
     session.currentlyPlaying = video;
-    const playerInstances = getUserPlayerInstances(session.hostId);
+    const playerInstances = getUserPlayerInstances(session.host.id);
     if (playerInstances)
       play(
         playerInstances,
@@ -69,21 +48,18 @@ export const getAndRemoveNextVideoFromSession = (code: string) => {
   return video;
 }
 
-export const getSessionWithCode = (code: string) => {
-  return sessions[code];
-}
-
-export const getSessionUserHosts = () => {
+export const getSession = () => {
   const user = getUser();
 
-  for (const code of Object.keys(sessions)) {
-    if (sessions[code].hostId === user.userId) {
-      return sessions[code];
+  for (const [_code, session] of sessions) {
+    if (session.host.id === user.id) {
+      return session;
     }
   }
 
   // create new
-  const session = createSession(user.userId);
+  const session = new Session(user);
+  sessions.set(session.code, session);
 
   return session;
 }
@@ -91,28 +67,23 @@ export const getSessionUserHosts = () => {
 
 export const updateUser = (code: string) => {
   const client = getUser();
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     return;
   }
-  session.clientIds.add(client.userId);
-
-  console.log(session);
+  session.clients.set(client.id, client);
   
   return session;
 }
 
 export const addClientsInfo = (code: string, nick: string) => {
   const client = getUser();
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     return;
   }
 
-  session.clients[client.userId] = {
-    id: client.userId,
-    name: nick
-  };
+  client.name = nick;
 
   return session;
 }
@@ -121,7 +92,7 @@ export const toggleLike = (code: string, videoId: string) => {
   try {
     const user = getUser();
 
-    const session = sessions[code];
+    const session = getSessionWithCode(code);;
     if (!session) {
       return;
     }
@@ -129,14 +100,11 @@ export const toggleLike = (code: string, videoId: string) => {
     if (!video) {
       return;
     }
-    if (video.likes.has(user.userId)) {
-      video.likes.delete(user.userId);
+    if (video.likes.has(user.id)) {
+      video.likes.delete(user.id);
     } else {
-      video.likes.add(user.userId);
+      video.likes.add(user.id);
     }
-
-    // this breaks shit
-    // sortVideos(session.queue);
 
     return video;
   } catch (error) {
@@ -144,7 +112,7 @@ export const toggleLike = (code: string, videoId: string) => {
   }
 }
 
-const users = await lazyEternalVar("users") ?? $$({} as Record<string, datexClassType<ObjectRef<typeof UserData>>>)
+const users = await lazyEternalVar("users") ?? $$(new Map<string, UserT>())
 
 /**
  * Returns an existing or a newly created user session.
@@ -153,41 +121,15 @@ const users = await lazyEternalVar("users") ?? $$({} as Record<string, datexClas
  * @returns A new or existing user session
  */
 export const getUser = (endpoint?: string) => {
-  const user = endpoint ? endpoint : datex.meta.caller.main.toString();
-  if (!(user in users)) {
-    users[user] = new UserData();
+  const e = endpoint ? endpoint : datex.meta.caller.main.toString();
+  if (!users.has(e)) {
+    users.set(e, new User(e));
   }
-  return users[user];
-}
-
-const createSession = (userId: string) => {
-  // create random code that is not already in use
-  let code = null;
-
-  // check if the code is already in use
-  while (!code || sessions[code]) {
-    // generate a random 4 character code consisting of uppercase letters and numbers
-    code = Array.from({ length: 4 }, () => Math.floor(Math.random() * 36).toString(36).toUpperCase()).join('');
-  }
-  const session = {
-    code,
-    hostId: userId,
-    host: getUser(),
-    clientIds: new Set() as Set<string>,
-    clients: {} as Record<string, Client>,
-    queue: [] as Item[],
-    recommendedQueue: [] as Item[],
-    currentlyPlaying: null as Item | null,
-  };
-  sessions[code] = session;
-
-  console.log(session);
-
-  return session;
+  return users.get(e)!;
 }
 
 export const getSortedQueue = (code: string) => {
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     console.log("no session!")
     return $$([])
@@ -198,14 +140,14 @@ export const getSortedQueue = (code: string) => {
 }
 
 export const addItemToQueue = (code: string, item: Item) => {
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     return;
   }
   session.queue.push(item);
 
   if (!session.currentlyPlaying) {
-    if (getUserPlayerInstances(session.hostId).length > 0) {
+    if (getUserPlayerInstances(session.host.id).length > 0) {
       session.host.discord.playing = true;
       session.host.discord.active = true;
       getAndRemoveNextVideoFromSession(code);
@@ -216,7 +158,7 @@ export const addItemToQueue = (code: string, item: Item) => {
 }
 
 export const getRecommendedQueue = (code: string) => {
-  const session = sessions[code];
+  const session = getSessionWithCode(code);
   if (!session) {
     console.log("no session!")
     return $$([])

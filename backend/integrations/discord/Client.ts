@@ -1,8 +1,7 @@
 import { Client as DClient, ClientOptions, GatewayIntentBits, Events } from "npm:discord.js";
 import { Shoukaku, Connectors, Player, Track, NodeOption } from "npm:shoukaku";
 import { getUser, sessions } from "backend/sessions.ts";
-import { ObjectRef, Pointer, datexClassType } from "datex-core-legacy/datex_all.ts";
-import { UserData } from "common/components/integrations/discord/Definitions.ts";
+import { Pointer } from "datex-core-legacy/datex_all.ts";
 
 // fallback config
 let config = {
@@ -67,7 +66,7 @@ export const init = () => {
 
     // where discord.active is true, clean up everything
     for (const session of Object.values(sessions)) {
-        const user = session.host as datexClassType<ObjectRef<typeof UserData>>;
+        const user = session.host;
         if (user.discord.active) {
             user.discord.active = false;
             user.discord.playing = false;
@@ -172,7 +171,7 @@ export const getCommonGuilds = async (): Promise<{status: number, guilds: GuildD
         botGuildsS.lastUpdate = Date.now();
     }
 
-    if (!(user.userId in userGuildsS) || Date.now() - userGuildsS[user.userId].lastUpdate > 60000) {
+    if (!(user.id in userGuildsS) || Date.now() - userGuildsS[user.id].lastUpdate > 60000) {
         const tUserGuilds = await getGuilds(`Bearer ${user.discord.bearer}`);
         if (!tUserGuilds) {
             return {
@@ -182,13 +181,13 @@ export const getCommonGuilds = async (): Promise<{status: number, guilds: GuildD
             };
         }
         
-        userGuildsS[user.userId] = {
+        userGuildsS[user.id] = {
             guilds: tUserGuilds,
             lastUpdate: Date.now()
         }
     }
 
-    const commonGuilds = userGuildsS[user.userId].guilds.filter(guild => botGuildsS.guilds.find(userGuild => userGuild.id === guild.id));
+    const commonGuilds = userGuildsS[user.id].guilds.filter(guild => botGuildsS.guilds.find(userGuild => userGuild.id === guild.id));
     user.discord.guilds = commonGuilds;
     return {
         status: status.OK,
@@ -300,7 +299,7 @@ export const joinVoiceChannel = async (data: { guildId: string, channelId: strin
     // check if the guild already has a player instance
     if (data.guildId in playerInstances) {
         // check if the user has a player instance in the guild
-        if (playerInstances[data.guildId].userId === user.userId) {
+        if (playerInstances[data.guildId].userId === user.id) {
             // check if the user is trying to join the bot the same channel
             if (playerInstances[data.guildId].channelId === data.channelId) {
                 // leave the channel
@@ -343,7 +342,7 @@ export const joinVoiceChannel = async (data: { guildId: string, channelId: strin
             playerInstances[data.guildId].channelId = data.channelId;
 
             // set botUser to the user's id
-            voiceChannelsDB.channels[data.channelId].botUser.val = user.userId;
+            voiceChannelsDB.channels[data.channelId].botUser.val = user.id;
 
             // return 1 to indicate that the bot has joined the new channel
             return {
@@ -366,7 +365,7 @@ export const joinVoiceChannel = async (data: { guildId: string, channelId: strin
 
     // because the guild doesn't have a player instance, create one
     playerInstances[data.guildId] = {
-        userId: user.userId,
+        userId: user.id,
         channelId: data.channelId
     };
 
@@ -382,7 +381,7 @@ export const joinVoiceChannel = async (data: { guildId: string, channelId: strin
         // save the player instance
         playerInstances[data.guildId].player = player;
         // set botUser to the user's id
-        voiceChannelsDB.channels[data.channelId].botUser.val = user.userId;
+        voiceChannelsDB.channels[data.channelId].botUser.val = user.id;
         // return 1 to indicate that the bot has joined the channel
         return {
             status: 1,
@@ -428,7 +427,7 @@ export const play = async (playerInstances: PlayerInstance[], data: PlayData, qu
 }
 
 export const getUserPlayerInstances = (user?: string) => {
-    const userId = user ? user : getUser().userId;
+    const userId = user ? user : getUser().id;
     return Object.values(playerInstances).filter(player => player.userId === userId);
 }
 

@@ -44,8 +44,7 @@ export default function ChannelList({ channels, channelClick }: { channels: Voic
         <ul class="discord channel list">
             {channels.map((channel: VoiceChannelData) => {
                 hasBot[channel.id] = always(() => {
-                    console.log("changed to", channel.botUser);
-                    return channel.botUser.val === "" ? 0 : channel.botUser.val === user.userId ? 1 : 2;
+                    return channel.botUser.val === "" ? 0 : channel.botUser.val === user.id ? 1 : 2;
                 });
                 return <ChannelItem channel={channel} botInChannel={hasBot[channel.id]} channelClick={clickHandler} />
             })}

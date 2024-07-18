@@ -1,11 +1,10 @@
 import { redirect } from "uix/utils/window-apis.ts"
-import { Context } from "uix/routing/context.ts";
 import { addClientsInfo } from "backend/sessions.ts";
 
-export default function Welcome(ctx: Context) {
+export default function Welcome(sessionCode: string) {
 
 	const user_name = $$("");
-	const code = $$(ctx.searchParams.get('code') ?? "");
+	const code = $$(sessionCode);
 
 	const noCode = always(() => {
 		return !code.val;

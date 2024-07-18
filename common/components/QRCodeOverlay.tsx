@@ -1,7 +1,6 @@
-import { Pointer } from "datex-core-legacy/runtime/pointers.ts";
-import QRCode from "./QR.tsx";
+import QRCode from "common/components/QR.tsx";
 
-export default function QRCodeOverlay({ code }: { code: Pointer<string> & string }) {
+export default function QRCodeOverlay({ code }: { code: string }) {
 	const showQR = $$(false);
 
 	return (
