@@ -1,4 +1,4 @@
-import { Client as DClient, ClientOptions, GatewayIntentBits, Events } from "npm:discord.js@dev";
+import { Client as DClient, ClientOptions, GatewayIntentBits, Events } from "npm:discord.js";
 import { Shoukaku, Connectors, Player, Track, NodeOption } from "npm:shoukaku";
 import { getUser, sessions } from "backend/sessions.ts";
 import { Pointer } from "datex-core-legacy/datex_all.ts";
