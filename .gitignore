@@ -1,6 +1,12 @@
 deno.lock
 .datex-cache
 node_modules/*
+!node_modules/@discordjs
+node_modules/*/*
+!node_modules/@discordjs/ws
+node_modules/*/*/*
+!node_modules/@discordjs/ws/dist
+node_modules/*/*/*/*
 !node_modules/@discordjs/ws/dist/index.js
 .deno_lsp
 .env
