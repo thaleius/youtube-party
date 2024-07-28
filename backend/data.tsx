@@ -2,6 +2,7 @@ import { Innertube, UniversalCache } from "https://deno.land/x/youtubei@v10.0.0-
 import uniqBy from 'https://cdn.skypack.dev/lodash/uniqBy';
 import shuffle from 'https://cdn.skypack.dev/lodash/shuffle';
 import take from 'https://cdn.skypack.dev/lodash/take';
+import { CompactVideo, GridVideo, MusicDescriptionShelf, PlaylistPanelVideo, PlaylistVideo, ReelItem, Video, WatchCardCompactVideo } from "https://deno.land/x/youtubei@v10.0.0-deno/deno/src/parser/nodes.ts";
 
 const youtube = await Innertube.create({
   cache: new UniversalCache(
@@ -28,7 +29,9 @@ export async function search(q: string) {
   }
 }
 
-const normalizeVideo = (video: any) => {
+type YTVideo = Video | GridVideo | ReelItem | CompactVideo | PlaylistVideo | PlaylistPanelVideo | WatchCardCompactVideo;
+
+const normalizeVideo = (video: YTVideo) => {
   return {
     title: video.title.text ?? 'Untitled',
     // @ts-ignore - no type for thumbnails
