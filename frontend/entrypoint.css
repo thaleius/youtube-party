@@ -1286,10 +1286,6 @@ select {
   fill: #000;
 }
 
-.fill-none {
-  fill: none;
-}
-
 .fill-white {
   fill: #fff;
 }
@@ -1300,14 +1296,6 @@ select {
 
 .stroke-black {
   stroke: #000;
-}
-
-.stroke-white {
-  stroke: #fff;
-}
-
-.stroke-\[2px\] {
-  stroke-width: 2px;
 }
 
 .object-cover {
