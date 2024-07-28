@@ -119,12 +119,12 @@ export default async function App(code: string) {
         </div>
         <div class="px-4 py-4 border-t border-black dark:border-white/20 mx-0 overflow-y-auto flex-grow">
 
-          <div class="space-y-4 text-white" style={{ display: views.search }}>{
+          <div class="space-y-4 text-black dark:text-white" style={{ display: views.search }}>{
             searchResults.$.map(item => {
               return <QueueItem item={item} type={'search'} code={code}></QueueItem>
             })}
           </div>
-          <div class="space-y-4 text-white" style={{ display: views.queue }}>
+          <div class="space-y-4 text-black dark:text-white" style={{ display: views.queue }}>
             {current}
             <div class={{
                 "border-t": always(() => sortedQueue.length > 0),
@@ -138,19 +138,19 @@ export default async function App(code: string) {
             </div>
           </div>
 
-          <div class="space-y-4 text-white" style={{ display: views.lyrics }}>
+          <div class="space-y-4 text-black dark:text-white" style={{ display: views.lyrics }}>
             {
               always(() => {
                 if (!views.lyrics.val)
                   return <></>;
                 if (!session.currentlyPlaying)
-                  return <p class="text-white">There is no song playing.</p>;
+                  return <p>There is no song playing.</p>;
                 return <Lyrics video={session.currentlyPlaying} />
               })
             }
           </div>
 
-          <div class="space-y-4 text-white" style={{ display: views.chat }}>Work in Progress
+          <div class="space-y-4 text-black dark:text-white" style={{ display: views.chat }}>Work in Progress
             {/*
             <div class="flex justify-between items-center mb-4">
               <span class="text-lg font-medium">Chat Box</span>
@@ -170,7 +170,7 @@ export default async function App(code: string) {
 
 
 
-          <div class="space-y-4 text-white" style={{ display: views.settings }}>
+          <div class="space-y-4 text-black dark:text-white" style={{ display: views.settings }}>
             <label class="inline-flex items-center cursor-pointer">
               <input onclick={toggleTheme} type="checkbox" value="" class="sr-only peer"></input>
               <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
