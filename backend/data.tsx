@@ -1,9 +1,16 @@
-import { Innertube } from "https://deno.land/x/youtubei@v10.0.0-deno/deno.ts";
+import { Innertube, UniversalCache } from "https://deno.land/x/youtubei@v10.0.0-deno/deno.ts";
 import uniqBy from 'https://cdn.skypack.dev/lodash/uniqBy';
 import shuffle from 'https://cdn.skypack.dev/lodash/shuffle';
 import take from 'https://cdn.skypack.dev/lodash/take';
 
-const youtube = await Innertube.create();
+const youtube = await Innertube.create({
+  cache: new UniversalCache(
+    // Enables persistent caching
+    true,
+    // Path to the cache directory. The directory will be created if it doesn't exist
+    './.cache/youtube' 
+  )
+});
 
 export async function search(q: string) {
   try {
