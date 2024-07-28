@@ -128,7 +128,7 @@ export default function App() {
         <Lyrics video={session.currentlyPlaying} />
       );
     }
-    return <span>No song is currently playing.</span>;
+    return <span>There is no song playing.</span>;
   })
 
   return (

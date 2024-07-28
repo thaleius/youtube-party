@@ -144,7 +144,7 @@ export default async function App(code: string) {
                 if (!views.lyrics.val)
                   return <></>;
                 if (!session.currentlyPlaying)
-                  return <p class="text-white">No song playing</p>;
+                  return <p class="text-white">There is no song playing.</p>;
                 return <Lyrics video={session.currentlyPlaying} />
               })
             }
