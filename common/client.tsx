@@ -6,6 +6,8 @@ import NavMenu from "common/components/nav/NavMenu.tsx";
 import { toggleTheme } from "common/components/ToggleThemeButton.tsx";
 import { sorter } from "common/sort.tsx";
 import { NowPlaying } from "common/components/NowPlaying.tsx";
+import Lyrics from "common/components/lyrics/Lyrics.tsx";
+import { Pointer } from "datex-core-legacy/datex_all.ts";
 
 export default async function App(code: string) {
 
@@ -33,18 +35,28 @@ export default async function App(code: string) {
 
   const searchResults = $$<Item[]>([]);
 
-  const activeView = $$<"queue" | "search" | "chat" | "settings">("queue");
+  type View = "queue" | "search" | "lyrics" | "chat" | "settings";
 
-  const showQueue = $$(true);
-  const showSearch = $$(false);
-  const showChat = $$(false);
-  const showSettings = $$(false);
+  const views = {
+    queue: $$(true),
+    search: $$(false),
+    lyrics: $$(false),
+    chat: $$(false),
+    settings: $$(false),
+  } as Record<View, Pointer<boolean>>;
+
+  const activeView = $$<View>("queue");
+
+  const setView = (view: View) => {
+    console.log("setView", view);
+    activeView.val = view;
+    for (const key in views) {
+      views[key as View].val = key === view;
+    }
+  }
 
   const onSearch = async (value: string) => {
-    activeView.val = "search";
-
-    showSearch.val = true;
-
+    setView("search");
     searchResults.splice(0, searchResults.length);
     searchResults.push(...(await search(value)));
   };
@@ -60,50 +72,23 @@ export default async function App(code: string) {
         buttons={[
           {
             label: "queue",
-            onClick: () => {
-              console.log("queue");
-              activeView.val = "queue";
-
-              showQueue.val = true;
-              showSearch.val = false;
-              showChat.val = false;
-              showSettings.val = false;
-            },
+            onClick: () => setView("queue"),
           },
           {
             label: "search",
-            onClick: () => {
-              console.log("search");
-              activeView.val = "search";
-
-              showQueue.val = false;
-              showSearch.val = true;
-              showChat.val = false;
-              showSettings.val = false;
-            },
+            onClick: () => setView("search"),
+          },
+          {
+            label: "lyrics",
+            onClick: () => setView("lyrics"),
           },
           // {
           //   label: "chat",
-          //   onClick: () => {
-          //     console.log("chat");
-          //     activeView.val = "chat";
-
-          //     showQueue.val = false;
-          //     showSearch.val = false;
-          //     showChat.val = true;
-          //     showSettings.val = false;
-          //   },
+          //   onClick: () => setView("chat"),
           // },
           {
             label: "settings",
-            onClick: () => {
-              console.log("settings");
-              activeView.val = "settings";
-              showQueue.val = false;
-              showSearch.val = false;
-              showChat.val = false;
-              showSettings.val = true;
-            },
+            onClick: () => setView("settings"),
           },
         ]}
       />
@@ -134,12 +119,12 @@ export default async function App(code: string) {
         </div>
         <div class="px-4 py-4 border-t border-black dark:border-white/20 mx-0 overflow-y-auto flex-grow">
 
-          <div class="space-y-4 text-white" style={{ display: showSearch }}>{
+          <div class="space-y-4 text-white" style={{ display: views.search }}>{
             searchResults.$.map(item => {
               return <QueueItem item={item} type={'search'} code={code}></QueueItem>
             })}
           </div>
-          <div class="space-y-4 text-white" style={{ display: showQueue }}>
+          <div class="space-y-4 text-white" style={{ display: views.queue }}>
             {current}
             <div class={{
                 "border-t": always(() => sortedQueue.length > 0),
@@ -153,9 +138,19 @@ export default async function App(code: string) {
             </div>
           </div>
 
+          <div class="space-y-4 text-white" style={{ display: views.lyrics }}>
+            {
+              always(() => {
+                if (!views.lyrics.val)
+                  return <></>;
+                if (!session.currentlyPlaying)
+                  return <p class="text-white">No song playing</p>;
+                return <Lyrics video={session.currentlyPlaying} />
+              })
+            }
+          </div>
 
-
-          <div class="space-y-4 text-white" style={{ display: showChat }}>Work in Progress
+          <div class="space-y-4 text-white" style={{ display: views.chat }}>Work in Progress
             {/*
             <div class="flex justify-between items-center mb-4">
               <span class="text-lg font-medium">Chat Box</span>
@@ -175,7 +170,7 @@ export default async function App(code: string) {
 
 
 
-          <div class="space-y-4 text-white" style={{ display: showSettings }}>
+          <div class="space-y-4 text-white" style={{ display: views.settings }}>
             <label class="inline-flex items-center cursor-pointer">
               <input onclick={toggleTheme} type="checkbox" value="" class="sr-only peer"></input>
               <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>

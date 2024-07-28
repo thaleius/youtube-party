@@ -2,6 +2,7 @@ import { Innertube, UniversalCache } from "https://deno.land/x/youtubei@v10.0.0-
 import uniqBy from 'https://cdn.skypack.dev/lodash/uniqBy';
 import shuffle from 'https://cdn.skypack.dev/lodash/shuffle';
 import take from 'https://cdn.skypack.dev/lodash/take';
+import { SongData } from "common/components/lyrics/Lyrics.tsx";
 import { CompactVideo, GridVideo, MusicDescriptionShelf, PlaylistPanelVideo, PlaylistVideo, ReelItem, Video, WatchCardCompactVideo } from "https://deno.land/x/youtubei@v10.0.0-deno/deno/src/parser/nodes.ts";
 
 const youtube = await Innertube.create({
@@ -91,4 +92,54 @@ export async function updateRecommendations(session: any, code: string) {
   })
 
   return session;
+}
+
+const lyrics = await lazyEternalVar("lyrics") ?? $$(new Map<string, SongData>());
+
+export const getSongData = async (id: string): Promise<SongData> => {
+  const errorHandler = (error: string, status: number) => {
+    if (status === 1)
+      lyrics.set(id, {
+        status,
+        lyrics: '',
+        error
+      });
+    return {
+      status,
+      lyrics: '',
+      error
+    };
+  }
+
+  if (lyrics.has(id)) {
+    return lyrics.get(id)!;
+  }
+
+  let data;
+
+  try {
+    data = await youtube.music.getLyrics(id);
+  } catch (error) {
+    if (error.toString().includes('Lyrics not available')) {
+      return errorHandler('Lyrics not available', 1);
+    }
+    return errorHandler(error.toString(), 2);
+  }
+
+  if (!data || !data.description?.text)
+    return errorHandler('Lyrics not available', 1);
+
+  const songData = {
+    status: 0,
+    lyrics: data.description.text,
+    footer: data.footer.text,
+  };
+
+  lyrics.set(id, songData);
+
+  return songData;
+};
+
+export const getLyrics = async (id: string): Promise<MusicDescriptionShelf | undefined> => {
+  return await youtube.music.getLyrics(id);
 }
