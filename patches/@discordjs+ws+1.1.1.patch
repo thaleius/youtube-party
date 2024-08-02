@@ -1,0 +1,13 @@
+diff --git a/node_modules/@discordjs/ws/dist/index.js b/node_modules/@discordjs/ws/dist/index.js
+index 7b50d9d..7474060 100644
+--- a/node_modules/@discordjs/ws/dist/index.js
++++ b/node_modules/@discordjs/ws/dist/index.js
+@@ -1062,7 +1062,7 @@ var WebSocketShard = class extends import_async_event_emitter.AsyncEventEmitter
+     }
+   }
+   onError(error) {
+-    if ("code" in error && ["ECONNRESET", "ECONNREFUSED"].includes(error.code)) {
++    if (error && "code" in error && ["ECONNRESET", "ECONNREFUSED"].includes(error.code)) {
+       this.debug(["Failed to connect to the gateway URL specified due to a network error"]);
+       this.failedToConnectDueToNetworkError = true;
+       return;
