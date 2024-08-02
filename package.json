@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "dev": "concurrently \"uix --reload -l --node-modules-dir --port=80\" \"npx tailwindcss -i ./frontend/main.css -o ./frontend/entrypoint.css --watch\""
+    "prepare": "patch-package",
+    "dev": "npm run prepare; concurrently \"uix --reload -l --node-modules-dir --port=4625\" \"npx tailwindcss -i ./frontend/main.css -o ./frontend/entrypoint.css --watch\"",
+    "start": "npm install && npm run prepare && concurrently \"rm -f deno.lock; rm -f ./src/deno.lock; deno run --node-modules-dir --import-map https://dev.cdn.unyt.org/importmap_compat.json -Aqr https://cdn.unyt.org/uix@0.1.x/run.ts --port 80 --stage $APP_STAGE --cache-path /datex-cache --reload -l\" \"npx tailwindcss -i ./frontend/main.css -o ./frontend/entrypoint.css --watch\""
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
