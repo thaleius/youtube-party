@@ -6,7 +6,7 @@
 			"name": "Launch Endpoint",
 			"type": "node",
 			"cwd": "${workspaceFolder}",
-			"runtimeExecutable": "/home/vscode/.nvm/versions/node/v20.15.1/bin/npm",
+			"runtimeExecutable": "npm",
 			"attachSimplePort": 9229,
 			"args": [
 				"run",
