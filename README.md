@@ -9,7 +9,7 @@ Made with [UIX](https://uix.unyt.org/).
 short demo video (left player, right a client)
 
 
-https://github.com/flo-bit/youtube-party-dj/assets/45694132/ac43fc09-d47f-4611-9991-0aa098f1105a
+https://github.com/thaleius/youtube-party-dj/assets/45694132/ac43fc09-d47f-4611-9991-0aa098f1105a
 
 
 ## development
@@ -17,7 +17,7 @@ https://github.com/flo-bit/youtube-party-dj/assets/45694132/ac43fc09-d47f-4611-9
 1. clone the repository
 
 ```bash
-git clone https://github.com/flo-bit/youtube-party-dj.git
+git clone https://github.com/thaleius/youtube-party-dj.git
 ```
 
 2. install [deno](https://docs.deno.com/runtime/manual/getting_started/installation)
